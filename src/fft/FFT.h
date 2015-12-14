@@ -11,7 +11,7 @@ typedef fftw_complex complex;
 
 class FFT {
 public:
-	FFT(int);
+	FFT(int, int);
 	FFT(int, const char *);
 	
 	complex * execute(double * indata, complex * outdata);

@@ -19,8 +19,6 @@ int SoundLocate::m_start() {
 		while(!samples) {
 			samples = m_in.read(m_blocksize);
 		}
-
-		
 		
 		m_out.write(samples, m_blocksize);
 	}

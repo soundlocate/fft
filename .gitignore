@@ -198,3 +198,7 @@ tramp
 # cask packages
 .cask/
 
+src/GPATH
+src/GRTAGS
+src/GTAGS
+compile_commands.json
