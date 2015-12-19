@@ -2,7 +2,9 @@
 
 Client::Client(const char * ip, unsigned short port, unsigned int &mic_count) {
 	m_socket = new sf::TcpSocket;
+	m_socket->setBlocking(true);
 
+	std::cout << "blocking: " << (m_socket->isBlocking() ? "true" : "false") << std::endl;
 	std::cout << "connecting to " << ip << ":" << port << std::endl;
 
 	while(m_socket->connect(sf::IpAddress(ip), port) != sf::Socket::Done) {
@@ -19,12 +21,18 @@ Client::Client(const char * ip, unsigned short port, unsigned int &mic_count) {
 }
 
 double * Client::recive(int count) {
-	double * samples = (double *) malloc(sizeof(double) * m_mic_count * count);
-	std::size_t recieved_size;
+	std::size_t recieved_size = 0, to_recieve = m_mic_count * count * sizeof(double), recieved_total = 0;
+    char * samples = (char *) malloc(to_recieve);
 
-	if(m_socket->receive(samples, sizeof(double) * m_mic_count * count, recieved_size) != sf::Socket::Done) {
-		return nullptr;
+	while(recieved_total != to_recieve) {
+		if(m_socket->receive(samples + recieved_total, to_recieve - recieved_total, recieved_size) == sf::Socket::Disconnected) {
+			return nullptr;
+		}
+
+		recieved_total += recieved_size;
+
+//		std::cout << "recieved " << (float) recieved_total / (m_mic_count * sizeof(double)) << " samples" << std::endl;
 	}
 
-	return samples;
+	return (double *) samples;
 }

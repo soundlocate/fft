@@ -20,13 +20,14 @@ FFT * fft;
 double * in, * out_converted;
 complex * out;
 
+constexpr unsigned int samplerate = 192000;
+
 int update_buffer(double * base_buffer, double * new_data, unsigned int base_count, unsigned int new_count) {
 	unsigned int offset = sizeof(double) * new_count;
 	unsigned int base_size = sizeof(double) * base_count;
 
-	memmove(base_buffer + offset, base_buffer, base_size - offset);
-
-	memcpy(base_buffer, new_data, offset);
+	memmove(base_buffer, base_buffer + new_count, base_size - offset);
+    memcpy(base_buffer + (base_count -  new_count), new_data, offset);
 
 	return 0;
 }
@@ -63,9 +64,9 @@ int convert_output(complex * out, double * out_converted, int samples, int mic_c
 			double complex = out[i * mic_count + j][1];
 
 			//            (samplerate / size of fft)
-			double freq = i * (192000 / 192000);
+			double freq = i * (samplerate / samples);
 			double phase = atan(real / complex);
-			double amplitude = sqrt(real * real + complex * complex);
+			double amplitude = (sqrt(real * real + complex * complex)) / (0.5 * samplerate);
 
 			out_converted[3 * mic_count * i + 3 * j] = freq;
 			out_converted[3 * mic_count * i + 3 * j + 1] = phase;
@@ -113,7 +114,8 @@ int main(int argc, char ** argv) {
 			);
 
 		STOPWATCH("fft_send_data",
-				  server.send(out_converted, samples * mic_count * 3);
+				  //server.send(out_converted, samples * mic_count * 3);
+				  server.send(out_converted, 210 * mic_count * 3);
 			);
 
 		STOPWATCH("fft_recieve_data",
@@ -133,6 +135,13 @@ int main(int argc, char ** argv) {
 			init(samples, mic_count);
 		}
 
+/*		for(int i = 0; i < block_size; i++) {
+			std::cout << in[4 * i] << std::endl;
+			std::cout << in[4 * i + 1] << std::endl;
+			std::cout << in[4 * i + 2] << std::endl;
+			std::cout << in[4 * i + 3] << std::endl;
+		}
+*/
 		STOPWATCH("fft_remap_buffer",
 				  update_buffer(in, in_new, samples * mic_count, block_size * mic_count);
 			);

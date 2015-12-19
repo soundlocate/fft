@@ -10,9 +10,10 @@ FFT::FFT(int size, int count) : m_size(size) {
 
 	fftw_import_wisdom_from_filename(filename);
 
-	int n[] = {size};
+	int n = size;
 
-	m_plan = fftw_plan_many_dft_r2c(1, n, count, m_indata, n, count, 1, m_outdata, n, count, 1, FFTW_EXHAUSTIVE);
+//	fftw_plan_many_dft_r2c(int rank, const int *n, int howmany, double *in, const int *inembed, int istride, int idist, fftw_complex *out, const int *onembed, int ostride, int odist, unsigned int flags)
+	m_plan = fftw_plan_many_dft_r2c(1, &n, count, m_indata, nullptr, count, 1, m_outdata, nullptr, count, 1, FFTW_EXHAUSTIVE);
 
 //	m_plan = fftw_plan_dft_r2c_1d(size, m_indata, m_outdata, FFTW_EXHAUSTIVE);
 
