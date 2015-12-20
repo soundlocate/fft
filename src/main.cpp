@@ -57,30 +57,41 @@ int cleanup() {
 	return 0;
 }
 
-int convert_output(complex * out, double * out_converted, int samples, int mic_count) {
+int convert_output(complex * out, double * out_converted, int samples, int mic_count, double threshold) {
+	int converted_count = 0;
+
 	for(int i = 0; i < samples; i++) {
-		for(int j = 0; j < mic_count; j++) {
-			double real = out[i * mic_count + j][0];
-			double complex = out[i * mic_count + j][1];
+		double t_real = out[i * mic_count][0];
+		double t_complex = out[i * mic_count][1];
+		double t_amplitude = (sqrt(t_real * t_real + t_complex * t_complex)) / (0.5 * samplerate);
 
-			//            (samplerate / size of fft)
-			double freq = i * (samplerate / samples);
-			double phase = atan(real / complex);
-			double amplitude = (sqrt(real * real + complex * complex)) / (0.5 * samplerate);
+		if(t_amplitude > threshold) {
+			for(int j = 0; j < mic_count; j++) {
+				double real = out[i * mic_count + j][0];
+				double complex = out[i * mic_count + j][1];
 
-			out_converted[3 * mic_count * i + 3 * j] = freq;
-			out_converted[3 * mic_count * i + 3 * j + 1] = phase;
-			out_converted[3 * mic_count * i + 3 * j + 2] = amplitude;
+				//            (samplerate / size of fft)
+				double freq = i * (samplerate / samples);
+				double phase = atan(real / complex);
+				double amplitude = (sqrt(real * real + complex * complex)) / (0.5 * samplerate);
+
+				out_converted[3 * mic_count * converted_count + 3 * j] = freq;
+				out_converted[3 * mic_count * converted_count + 3 * j + 1] = phase;
+				out_converted[3 * mic_count * converted_count + 3 * j + 2] = amplitude;
+			}
+
+			converted_count++;
 		}
 	}
 
-	return 0;
+	return converted_count;
 }
 
 int main(int argc, char ** argv) {
 //	int samples = atoi(argv[1]);
 	int block_size = 9600;
 	int samples = 192000;
+	int converted = 0;
 
 	unsigned int mic_count;
 
@@ -110,12 +121,13 @@ int main(int argc, char ** argv) {
 //		std::cout << "FFT took: " << finalTime.count() << "ms" << std::endl;
 
 		STOPWATCH("fft_convert_output",
-				  convert_output(out, out_converted, samples, mic_count);
+				  converted = convert_output(out, out_converted, samples, mic_count, 0.01);
 			);
 
 		STOPWATCH("fft_send_data",
 				  //server.send(out_converted, samples * mic_count * 3);
-				  server.send(out_converted, 210 * mic_count * 3);
+				  server.send(out_converted, converted * mic_count * 3);
+//				  server.send(out_converted, 200 * mic_count * 3);
 			);
 
 		STOPWATCH("fft_recieve_data",
@@ -146,8 +158,14 @@ int main(int argc, char ** argv) {
 				  update_buffer(in, in_new, samples * mic_count, block_size * mic_count);
 			);
 
+		free(in_new);
+
 		TOCK("fft_total");
 
 		Stopwatch::getInstance().sendAll();
 	}
+
+	free(in);
+	free(out);
+	free(out_converted);
 }

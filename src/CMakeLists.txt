@@ -7,7 +7,7 @@ TARGET_LINK_LIBRARIES(${project_BIN} ${project_LIBS})
 
 SET_TARGET_PROPERTIES(${project_BIN} PROPERTIES VERSION "${APPLICATION_VERSION_MAJOR}.${APPLICATION_VERSION_MINOR}" OUTPUT_NAME ${project_BIN} CLEAN_DIRECT_OUTPUT 1)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -xHOST -O3 -ipo -no-prec-div -fp-model fast=2 -fPIE -static-intel -qopt-report=5 -qopt-report-stdout")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -xHOST -ipo -no-prec-div -fp-model fast=2 -static-intel -parallel")
 
 #TARGET_COMPILE_FEATURES(${PROJECT_NAME} PRIVATE cxx_constexpr)
 
