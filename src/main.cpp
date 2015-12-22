@@ -7,6 +7,7 @@
 #include <iterator>
 #include <fstream>
 #include <cstring>
+#include <csignal>
 
 #include <Stopwatch.h>
 
@@ -19,6 +20,7 @@
 FFT * fft;
 double * in, * out_converted;
 complex * out;
+Server * server;
 
 constexpr unsigned int samplerate = 192000;
 
@@ -31,7 +33,6 @@ int update_buffer(double * base_buffer, double * new_data, unsigned int base_cou
 
 	return 0;
 }
-
 
 int init(int samples, int mic_count) {
 	auto planningTime = std::chrono::high_resolution_clock::now();
@@ -55,6 +56,12 @@ int cleanup() {
 	free(out_converted);
 
 	return 0;
+}
+
+void terminate(int signal) {
+	cleanup();
+
+	server->close();
 }
 
 int convert_output(complex * out, double * out_converted, int samples, int mic_count, double threshold) {
@@ -96,11 +103,15 @@ int main(int argc, char ** argv) {
 	unsigned int mic_count;
 
 	Client client(argv[1], atoi(argv[2]), mic_count);
-	Server server(atoi(argv[3]), [&mic_count](sf::TcpSocket * socket){
+    server = new Server(atoi(argv[3]), [&mic_count](sf::TcpSocket * socket){
 			socket->send(&mic_count, sizeof(unsigned int));
 		});
 
 	std::cout << "mic_count: " << mic_count << std::endl;
+
+	std::signal(SIGTERM, terminate);
+	std::signal(SIGINT, terminate);
+	std::signal(SIGABRT, terminate);
 
 	double * in_new;
 
@@ -126,7 +137,7 @@ int main(int argc, char ** argv) {
 
 		STOPWATCH("fft_send_data",
 				  //server.send(out_converted, samples * mic_count * 3);
-				  server.send(out_converted, converted * mic_count * 3);
+				  server->send(out_converted, converted * mic_count * 3);
 //				  server.send(out_converted, 200 * mic_count * 3);
 			);
 
@@ -165,7 +176,5 @@ int main(int argc, char ** argv) {
 		Stopwatch::getInstance().sendAll();
 	}
 
-	free(in);
-	free(out);
-	free(out_converted);
+	terminate(0);
 }

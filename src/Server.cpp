@@ -1,6 +1,5 @@
 #include "Server.h"
 
-
 Server::Server(unsigned short port, std::function<void (sf::TcpSocket *)> onAcceptFunction) {
 	listener.listen(port);
 
@@ -14,4 +13,8 @@ Server::Server(unsigned short port, std::function<void (sf::TcpSocket *)> onAcce
 			    clients.push_back(socket);
 			}
 		}).detach();
+}
+
+void Server::close() {
+	listener.close();
 }
