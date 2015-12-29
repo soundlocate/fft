@@ -16,5 +16,9 @@ Server::Server(unsigned short port, std::function<void (sf::TcpSocket *)> onAcce
 }
 
 void Server::close() {
+	for(auto client : clients) {
+		client->disconnect();
+	}
+
 	listener.close();
 }

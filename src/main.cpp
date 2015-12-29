@@ -62,6 +62,8 @@ void terminate(int signal) {
 	cleanup();
 
 	server->close();
+
+	exit(EXIT_SUCCESS);
 }
 
 int convert_output(complex * out, double * out_converted, int samples, int mic_count, double threshold) {
@@ -75,12 +77,13 @@ int convert_output(complex * out, double * out_converted, int samples, int mic_c
 		if(t_amplitude > threshold) {
 			for(int j = 0; j < mic_count; j++) {
 				double real = out[i * mic_count + j][0];
-				double complex = out[i * mic_count + j][1];
+				double imaginary = out[i * mic_count + j][1];
 
 				//            (samplerate / size of fft)
 				double freq = i * (samplerate / samples);
-				double phase = atan(real / complex);
-				double amplitude = (sqrt(real * real + complex * complex)) / (0.5 * samplerate);
+				double phase = atan2(imaginary, real);
+				double amplitude = (sqrt(real * real + imaginary * imaginary)) / (0.5 * samplerate);
+				//std::cout << imaginary / real << std::endl;
 
 				out_converted[3 * mic_count * converted_count + 3 * j] = freq;
 				out_converted[3 * mic_count * converted_count + 3 * j + 1] = phase;
@@ -137,18 +140,20 @@ int main(int argc, char ** argv) {
 
 		STOPWATCH("fft_send_data",
 				  //server.send(out_converted, samples * mic_count * 3);
-				  server->send(out_converted, converted * mic_count * 3);
+				  if(converted > 0) {
+					  server->send(out_converted, converted * mic_count * 3);
+				  }
 //				  server.send(out_converted, 200 * mic_count * 3);
 			);
 
 		STOPWATCH("fft_recieve_data",
-				  in_new = client.recive(block_size);
+				  in_new = client.receive(block_size);
 			);
 
 		if(in_new == nullptr) {
 			std::cout << "server disconnected, trying reconnect" << std::endl;
 
-			client = Client(argv[1], atoi(argv[2]), mic_count);
+			client.reconnect(argv[1], atoi(argv[2]), mic_count);
 
 			std::cout << "reconnected :)" << std::endl;
 			std::cout << "new mic_count: " << mic_count << std::endl;
@@ -156,6 +161,8 @@ int main(int argc, char ** argv) {
 
 			cleanup();
 			init(samples, mic_count);
+
+			in_new = client.receive(block_size);
 		}
 
 /*		for(int i = 0; i < block_size; i++) {
