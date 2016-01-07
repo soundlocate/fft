@@ -70,9 +70,14 @@ int convert_output(complex * out, double * out_converted, int samples, int mic_c
 	int converted_count = 0;
 
 	for(int i = 0; i < samples; i++) {
-		double t_real = out[i * mic_count][0];
-		double t_complex = out[i * mic_count][1];
-		double t_amplitude = (sqrt(t_real * t_real + t_complex * t_complex)) / (0.5 * samplerate);
+		double t_amplitude = 0;
+
+		for(int j = 0; j < mic_count; j++) {
+			double t_real = out[i * mic_count + j][0];
+			double t_complex = out[i * mic_count + j][1];
+			double temp_amplitude = ((sqrt(t_real * t_real + t_complex * t_complex)) / (0.5 * samplerate));
+			t_amplitude = (temp_amplitude > t_amplitude) ? temp_amplitude : t_amplitude;
+		}
 
 		if(t_amplitude > threshold) {
 			for(int j = 0; j < mic_count; j++) {
@@ -80,10 +85,12 @@ int convert_output(complex * out, double * out_converted, int samples, int mic_c
 				double imaginary = out[i * mic_count + j][1];
 
 				//            (samplerate / size of fft)
-				double freq = i * (samplerate / samples);
+				double freq = (double) i * ((double) samplerate / (double) samples);
 				double phase = atan2(imaginary, real);
 				double amplitude = (sqrt(real * real + imaginary * imaginary)) / (0.5 * samplerate);
 				//std::cout << imaginary / real << std::endl;
+//				std::cout << "freq: " << freq << std::endl;
+//				std::cout << "amplitude: " << amplitude << std::endl;
 
 				out_converted[3 * mic_count * converted_count + 3 * j] = freq;
 				out_converted[3 * mic_count * converted_count + 3 * j + 1] = phase;
@@ -101,6 +108,8 @@ int main(int argc, char ** argv) {
 //	int samples = atoi(argv[1]);
 	int block_size = 9600;
 	int samples = 192000;
+	//int samples = 19200;
+
 	int converted = 0;
 
 	unsigned int mic_count;
