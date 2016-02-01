@@ -6,6 +6,7 @@
 #include <fftw3.h>
 #include <cstdlib>
 #include <iostream>
+#include <omp.h>
 
 typedef fftw_complex complex;
 
