@@ -3,7 +3,7 @@
 #ifndef _FFT_FFT_H
 #define _FFT_FFT_H
 
-#include <fftw3.h>
+#include <cufftw.h>
 #include <cstdlib>
 #include <iostream>
 #include <omp.h>

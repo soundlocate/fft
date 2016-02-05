@@ -8,7 +8,9 @@ FFT::FFT(int size, int count) : m_size(size) {
 
 	sprintf(filename, "fftw_wisdom/dr2c%dx%d", size, count);
 
-	fftw_import_wisdom_from_filename(filename);
+	FILE * file = fopen(filename, "r");
+	fftw_import_wisdom_from_file(file);
+	fclose(file);
 
 	int n = size;
 
@@ -17,7 +19,9 @@ FFT::FFT(int size, int count) : m_size(size) {
 
 //	m_plan = fftw_plan_dft_r2c_1d(size, m_indata, m_outdata, FFTW_EXHAUSTIVE);
 
-	fftw_export_wisdom_to_filename(filename);    
+	file = fopen(filename, "w");
+	fftw_export_wisdom_to_file(file);
+	fclose(file);
 }
 
 FFT::FFT(int size, const char * filename) {
