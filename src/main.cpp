@@ -69,7 +69,7 @@ void terminate(int signal) {
 int convert_output(complex * out, double * out_converted, int samples, int mic_count, double threshold) {
 	int converted_count = 0;
 
-	for(int i = 0; i < samples; i++) {
+	for(int i = 0; i < samples / 2 + 1; i++) {
 		double t_amplitude = 0;
 
 		for(int j = 0; j < mic_count; j++) {
