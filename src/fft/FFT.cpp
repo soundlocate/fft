@@ -7,7 +7,8 @@ FFT::FFT(int size, int count) : m_size(size) {
 	char filename[512];
 
 	sprintf(filename, "fftw_wisdom/dr2c%dx%d", size, count);
-
+	fftw_init_threads();
+	fftw_plan_with_nthreads(4);
 	fftw_import_wisdom_from_filename(filename);
 
 	int n = size;
