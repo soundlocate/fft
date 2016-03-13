@@ -106,7 +106,7 @@ int convert_output(complex * out, double * out_converted, int samples, int mic_c
 
 int main(int argc, char ** argv) {
 //	int samples = atoi(argv[1]);
-	int block_size = 9600;
+	int block_size = 9600 * 2;
 	int samples = 192000;
 	//int samples = 19200;
 
