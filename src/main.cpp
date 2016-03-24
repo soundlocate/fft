@@ -16,6 +16,7 @@
 #include "fft/FFT.h"
 #include "Client.h"
 #include "Server.h"
+#include "CommandLineOptions.h"
 
 FFT * fft;
 double * in, * out_converted;
@@ -114,8 +115,10 @@ int main(int argc, char ** argv) {
 
 	unsigned int mic_count;
 
-	Client client(argv[1], atoi(argv[2]), mic_count);
-    server = new Server(atoi(argv[3]), [&mic_count](sf::TcpSocket * socket){
+	CommandLineOptions options(argc, argv);
+
+	Client client(options.audioIp().c_str(), options.audioPort(), mic_count);
+    server = new Server(options.fftPort(), [&mic_count](sf::TcpSocket * socket) {
 			socket->send(&mic_count, sizeof(unsigned int));
 		});
 
@@ -162,7 +165,7 @@ int main(int argc, char ** argv) {
 		if(in_new == nullptr) {
 			std::cout << "server disconnected, trying reconnect" << std::endl;
 
-			client.reconnect(argv[1], atoi(argv[2]), mic_count);
+			client.reconnect(options.audioIp().c_str(), options.audioPort(), mic_count);
 
 			std::cout << "reconnected :)" << std::endl;
 			std::cout << "new mic_count: " << mic_count << std::endl;
