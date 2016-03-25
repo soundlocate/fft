@@ -1,6 +1,6 @@
 #include "FFT.h"
 
-FFT::FFT(int size, int count) : m_size(size) {
+FFT::FFT(int size, int count) : m_size(size), m_count(count) {
 	m_indata = (double *) malloc(sizeof(double) * size * count);
 	m_outdata = (complex * ) malloc(sizeof(complex) * size * count);
 
@@ -18,6 +18,13 @@ FFT::FFT(int size, int count) : m_size(size) {
 
 //	m_plan = fftw_plan_dft_r2c_1d(size, m_indata, m_outdata, FFTW_EXHAUSTIVE);
 
+	// build hamming window table
+	m_window = (double *) malloc(sizeof(double) * size);
+
+	for(int i = 0; i < size; i++) {
+	    m_window[i] = 0.54 - 0.46 * cos((2.0 * M_PI * i) / ((double) size - 1.0));
+	}
+
 	fftw_export_wisdom_to_filename(filename);    
 }
 
@@ -32,7 +39,15 @@ FFT::FFT(int size, const char * filename) {
 }
 
 complex * FFT::execute(double * indata, complex * outdata) {
-	fftw_execute_dft_r2c(m_plan, indata, outdata);
+    memcpy(m_indata, indata, sizeof(double) * m_size * m_count);
+
+	for(int i = 0; i < m_size; i++) {
+		for(int j = 0; j < m_count; j++) {
+//			m_indata[m_count * i + j] *= m_window[i];
+		}
+	}
+
+	fftw_execute_dft_r2c(m_plan, m_indata, outdata);
 	
 	return outdata;
 }
