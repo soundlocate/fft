@@ -108,7 +108,7 @@ int convert_output(complex * out, double * out_converted, int samples, int mic_c
 int main(int argc, char ** argv) {
 //	int samples = atoi(argv[1]);
 	int block_size = 9600 * 2;
-	int samples = samplerate / 4;
+	int samples = samplerate;
 	//int samples = 19200;
 
 	int converted = 0;
@@ -147,7 +147,7 @@ int main(int argc, char ** argv) {
 //		std::cout << "FFT took: " << finalTime.count() << "ms" << std::endl;
 
 		STOPWATCH("fft_convert_output",
-				  converted = convert_output(out, out_converted, samples, mic_count, 0.00);
+				  converted = convert_output(out, out_converted, samples, mic_count, 0.01);
 			);
 
 		STOPWATCH("fft_send_data",
