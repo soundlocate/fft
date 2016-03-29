@@ -43,7 +43,7 @@ complex * FFT::execute(double * indata, complex * outdata) {
 
 	for(int i = 0; i < m_size; i++) {
 		for(int j = 0; j < m_count; j++) {
-			m_indata[m_count * i + j] *= m_window[i];
+//			m_indata[m_count * i + j] *= m_window[i];
 		}
 	}
 

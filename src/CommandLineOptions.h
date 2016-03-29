@@ -64,9 +64,6 @@ private:
 				argp_usage(state);
 			}
 
-			std::cout << "arg: " << arg << std::endl;
-			std::cout << "arg_num: " << state->arg_num << std::endl;
-
 			// parse the arguments
 			try {
 				switch (state->arg_num) {
@@ -88,8 +85,6 @@ private:
 			break;
 
 		case ARGP_KEY_END: /* end of arguments */
-			std::cout << "arg_num: " << state->arg_num << std::endl;
-
             // check for too few non option arguments
 			if (state->arg_num < 3) {
 				argp_usage(state);

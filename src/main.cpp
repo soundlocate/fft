@@ -147,7 +147,7 @@ int main(int argc, char ** argv) {
 //		std::cout << "FFT took: " << finalTime.count() << "ms" << std::endl;
 
 		STOPWATCH("fft_convert_output",
-				  converted = convert_output(out, out_converted, samples, mic_count, 0.01);
+				  converted = convert_output(out, out_converted, samples, mic_count, 0.0);
 			);
 
 		STOPWATCH("fft_send_data",
