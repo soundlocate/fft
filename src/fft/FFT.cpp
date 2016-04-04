@@ -1,6 +1,6 @@
 #include "FFT.h"
 
-FFT::FFT(int size, int count) : m_size(size), m_count(count) {
+FFT::FFT(int size, int count, int window) : m_size(size), m_count(count) {
 	m_indata = (double *) malloc(sizeof(double) * size * count);
 	m_outdata = (complex * ) malloc(sizeof(complex) * size * count);
 
@@ -21,8 +21,18 @@ FFT::FFT(int size, int count) : m_size(size), m_count(count) {
 	// build hamming window table
 	m_window = (double *) malloc(sizeof(double) * size);
 
-	for(int i = 0; i < size; i++) {
-	    m_window[i] = 0.54 - 0.46 * cos((2.0 * M_PI * i) / ((double) size - 1.0));
+	if(window == 0) {
+		for(int i = 0; i < size; i++) {
+			m_window[i] = 0.54 - 0.46 * cos((2.0 * M_PI * i) / ((double) size - 1.0));
+		}
+	} else if(window == 1) {
+		for(int i = 0; i < size; i++) {
+			m_window[i] = 0.5 - 0.5 * cos((2.0 * M_PI * i) / ((double) size - 1.0));
+		}
+	} else if(window == 2) {
+		for(int i = 0; i < size; i++) {
+			m_window[i] = 1;
+		}
 	}
 
 	fftw_export_wisdom_to_filename(filename);    
