@@ -16,13 +16,14 @@
 #include "fft/FFT.h"
 #include "Client.h"
 #include "Server.h"
+#include "CommandLineOptions.h"
 
 FFT * fft;
 double * in, * out_converted;
 complex * out;
 Server * server;
 
-constexpr unsigned int samplerate = 192000;
+unsigned int samplerate = 192000;
 
 int update_buffer(double * base_buffer, double * new_data, unsigned int base_count, unsigned int new_count) {
 	unsigned int offset = sizeof(double) * new_count;
@@ -34,10 +35,10 @@ int update_buffer(double * base_buffer, double * new_data, unsigned int base_cou
 	return 0;
 }
 
-int init(int samples, int mic_count) {
+int init(int samples, int mic_count, int window) {
 	auto planningTime = std::chrono::high_resolution_clock::now();
 
-	fft = new FFT(samples, mic_count);
+	fft = new FFT(samples, mic_count, window);
 
 	in  =  (double *) malloc(sizeof(double) * samples * mic_count);
     out = (complex *) malloc(sizeof(complex) * samples * mic_count);
@@ -106,16 +107,19 @@ int convert_output(complex * out, double * out_converted, int samples, int mic_c
 
 int main(int argc, char ** argv) {
 //	int samples = atoi(argv[1]);
-	int block_size = 9600;
-	int samples = 192000;
+	CommandLineOptions options(argc, argv);
+	samplerate = options.samplerate();
+	int samples = options.fftSize();
+	int block_size = (int) ((double) samplerate  / (double) options.fftPerSec());
+
 	//int samples = 19200;
 
 	int converted = 0;
 
 	unsigned int mic_count;
 
-	Client client(argv[1], atoi(argv[2]), mic_count);
-    server = new Server(atoi(argv[3]), [&mic_count](sf::TcpSocket * socket){
+	Client client(options.audioIp().c_str(), options.audioPort(), mic_count);
+    server = new Server(options.fftPort(), [&mic_count](sf::TcpSocket * socket) {
 			socket->send(&mic_count, sizeof(unsigned int));
 		});
 
@@ -127,7 +131,7 @@ int main(int argc, char ** argv) {
 
 	double * in_new;
 
-	init(samples, mic_count);
+	init(samples, mic_count, options.windowingFunction());
 
 	Stopwatch::getInstance().setCustomSignature(32434);
 
@@ -144,7 +148,7 @@ int main(int argc, char ** argv) {
 //		std::cout << "FFT took: " << finalTime.count() << "ms" << std::endl;
 
 		STOPWATCH("fft_convert_output",
-				  converted = convert_output(out, out_converted, samples, mic_count, 0.01);
+				  converted = convert_output(out, out_converted, samples, mic_count, options.threshold());
 			);
 
 		STOPWATCH("fft_send_data",
@@ -162,14 +166,14 @@ int main(int argc, char ** argv) {
 		if(in_new == nullptr) {
 			std::cout << "server disconnected, trying reconnect" << std::endl;
 
-			client.reconnect(argv[1], atoi(argv[2]), mic_count);
+			client.reconnect(options.audioIp().c_str(), options.audioPort(), mic_count);
 
 			std::cout << "reconnected :)" << std::endl;
 			std::cout << "new mic_count: " << mic_count << std::endl;
 			std::cout << "rebuilding fftw_plan" << std::endl;
 
 			cleanup();
-			init(samples, mic_count);
+			init(samples, mic_count, options.windowingFunction());
 
 			in_new = client.receive(block_size);
 		}
