@@ -3,10 +3,9 @@
 #ifndef _FFT_FFT_H
 #define _FFT_FFT_H
 
-#include <cufftw.h>
+#include <fftw3.h>
 #include <cstdlib>
 #include <iostream>
-#include <omp.h>
 #include <cstring>
 #include <cmath>
 

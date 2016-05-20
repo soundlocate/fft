@@ -6,11 +6,11 @@ FFT::FFT(int size, int count, int window) : m_size(size), m_count(count) {
 
 	char filename[512];
 
-	sprintf(filename, "fftw_wisdom/dr2c%dx%d", size, count);
+	// sprintf(filename, "fftw_wisdom/dr2c%dx%d", size, count);
 
-	FILE * file = fopen(filename, "r");
-	fftw_import_wisdom_from_file(file);
-	fclose(file);
+	// FILE * file = fopen(filename, "r");
+	// fftw_import_wisdom_from_file(file);
+	// fclose(file);
 
 	int n = size;
 
@@ -19,9 +19,9 @@ FFT::FFT(int size, int count, int window) : m_size(size), m_count(count) {
 
 //	m_plan = fftw_plan_dft_r2c_1d(size, m_indata, m_outdata, FFTW_EXHAUSTIVE);
 
-	file = fopen(filename, "w");
-	fftw_export_wisdom_to_file(file);
-	fclose(file);
+	// file = fopen(filename, "w");
+	// fftw_export_wisdom_to_file(file);
+	// fclose(file);
 
 	// build hamming window table
 	m_window = (double *) malloc(sizeof(double) * size);

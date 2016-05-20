@@ -2,6 +2,7 @@
 
 Server::Server(unsigned short port, std::function<void (sf::TcpSocket *)> onAcceptFunction) {
 	listener.listen(port);
+	listener.setBlocking(false);
 
 	std::thread([this, onAcceptFunction](){
 			while(true) {
