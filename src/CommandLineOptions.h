@@ -59,7 +59,7 @@ private:
     // struct for holding the argument info
     struct arguments {
         std::string    audioIp;
-        bool           useFPGA;
+        bool           useFPGA = false;
         unsigned short audioPort;
 
         unsigned short fftPort;
@@ -80,6 +80,7 @@ private:
         switch(key) {
 		case 'u':
 			arguments->useFPGA = true;
+			break;
         case 't':
             try {
                 arguments->threshold = std::stod(arg);
